@@ -7,5 +7,6 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/mercadolibre/golang-restclient v0.0.0-20170701022150-51958130a0a0 // indirect
 	github.com/studingprojects/bookstore_oauth-go v0.0.0-20200731051817-24a8b112ceb3
+	github.com/studingprojects/bookstore_utils-go v0.0.0-20200803111859-1539284d97f3
 	go.uber.org/zap v1.15.0
 )

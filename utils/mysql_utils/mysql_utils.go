@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/studingprojects/bookstore_user-api/utils/errors"
+	errors "github.com/studingprojects/bookstore_utils-go/rest_errors"
 )
 
 const (
@@ -17,11 +17,11 @@ func ParseError(err error) *errors.RestErr {
 		if strings.Contains(err.Error(), NoRecordPattern) {
 			return errors.NewNotFounfError("record not found")
 		}
-		return errors.NewInternalServerError("error while parsing database response")
+		return errors.NewInternalServerError("error while parsing database response", err)
 	}
 	switch sqlErr.Number {
 	case 1062:
 		return errors.NewBadRequestError("invalid data")
 	}
-	return errors.NewInternalServerError("error processing request")
+	return errors.NewInternalServerError("error processing request", err)
 }

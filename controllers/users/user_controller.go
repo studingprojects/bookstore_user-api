@@ -9,7 +9,7 @@ import (
 	"github.com/studingprojects/bookstore_oauth-go/oauth"
 	"github.com/studingprojects/bookstore_user-api/domain/users"
 	"github.com/studingprojects/bookstore_user-api/services"
-	"github.com/studingprojects/bookstore_user-api/utils/errors"
+	errors "github.com/studingprojects/bookstore_utils-go/rest_errors"
 )
 
 func TestServiceInterface() {

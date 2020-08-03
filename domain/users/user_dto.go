@@ -3,7 +3,7 @@ package users
 import (
 	"strings"
 
-	"github.com/studingprojects/bookstore_user-api/utils/errors"
+	errors "github.com/studingprojects/bookstore_utils-go/rest_errors"
 )
 
 const (
