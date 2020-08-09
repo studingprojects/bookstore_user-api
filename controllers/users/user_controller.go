@@ -9,7 +9,7 @@ import (
 	"github.com/studingprojects/bookstore_oauth-go/oauth"
 	"github.com/studingprojects/bookstore_user-api/domain/users"
 	"github.com/studingprojects/bookstore_user-api/services"
-	errors "github.com/studingprojects/bookstore_utils-go/rest_errors"
+	"github.com/studingprojects/bookstore_utils-go/rest_errors"
 )
 
 func TestServiceInterface() {
@@ -24,14 +24,14 @@ func GetUser(c *gin.Context) {
 
 	userId, userErr := strconv.ParseInt(c.Param("userId"), 10, 64)
 	if userErr != nil {
-		err := errors.NewBadRequestError("invalid user id")
-		c.JSON(err.Status, err)
+		err := rest_errors.NewBadRequestError("invalid user id")
+		c.JSON(err.Status(), err)
 		return
 	}
 
 	result, getErr := services.UsersService.GetUser(userId)
 	if getErr != nil {
-		c.JSON(getErr.Status, getErr)
+		c.JSON(getErr.Status(), getErr)
 		return
 	}
 	if result.Id == oauth.GetCallerId(c.Request) {
@@ -49,13 +49,13 @@ func GetUsers(c *gin.Context) {
 func Create(c *gin.Context) {
 	var user users.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		restErr := errors.NewBadRequestError("invalid json")
-		c.JSON(restErr.Status, restErr)
+		restErr := rest_errors.NewBadRequestError("invalid json")
+		c.JSON(restErr.Status(), restErr)
 		return
 	}
 	result, saveErr := services.UsersService.CreateUser(user)
 	if saveErr != nil {
-		c.JSON(saveErr.Status, saveErr)
+		c.JSON(saveErr.Status(), saveErr)
 		return
 	}
 	c.JSON(http.StatusCreated, result.Marshal(c.GetHeader("X-Public") == "true"))
@@ -64,21 +64,21 @@ func Create(c *gin.Context) {
 func Update(c *gin.Context) {
 	userID, userErr := strconv.ParseInt(c.Param("userId"), 10, 64)
 	if userErr != nil {
-		err := errors.NewBadRequestError("invalid user id")
-		c.JSON(err.Status, err)
+		err := rest_errors.NewBadRequestError("invalid user id")
+		c.JSON(err.Status(), err)
 		return
 	}
 	var user users.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		restErr := errors.NewBadRequestError("invalid json")
-		c.JSON(restErr.Status, restErr)
+		restErr := rest_errors.NewBadRequestError("invalid json")
+		c.JSON(restErr.Status(), restErr)
 		return
 	}
 	isPartial := c.Request.Method == http.MethodPatch
 	user.Id = userID
 	result, getErr := services.UsersService.UpdateUser(isPartial, user)
 	if getErr != nil {
-		c.JSON(getErr.Status, getErr)
+		c.JSON(getErr.Status(), getErr)
 		return
 	}
 	c.JSON(http.StatusOK, result.Marshal(c.GetHeader("X-Public") == "true"))
@@ -87,11 +87,11 @@ func Update(c *gin.Context) {
 func Delete(c *gin.Context) {
 	userId, idErr := getUserId(c.Param("userId"))
 	if idErr != nil {
-		c.JSON(idErr.Status, idErr)
+		c.JSON(idErr.Status(), idErr)
 		return
 	}
 	if deletedErr := services.UsersService.DeleteUser(userId); deletedErr != nil {
-		c.JSON(deletedErr.Status, deletedErr)
+		c.JSON(deletedErr.Status(), deletedErr)
 		return
 	}
 	c.JSON(http.StatusNoContent, map[string]string{"status": "deleted"})
@@ -102,7 +102,7 @@ func Search(c *gin.Context) {
 	status := c.Query("status")
 	users, err := services.UsersService.FindByStatus(status)
 	if err != nil {
-		c.JSON(err.Status, err)
+		c.JSON(err.Status(), err)
 		return
 	}
 	c.JSON(http.StatusOK, users.Marshal(c.GetHeader("X-Public") == "true"))
@@ -111,14 +111,14 @@ func Search(c *gin.Context) {
 func Login(c *gin.Context) {
 	var login users.LoginRequest
 	if err := c.ShouldBindJSON(&login); err != nil {
-		restErr := errors.NewBadRequestError("invalid json")
-		c.JSON(restErr.Status, restErr)
+		restErr := rest_errors.NewBadRequestError("invalid json")
+		c.JSON(restErr.Status(), restErr)
 		return
 	}
 	var userInfo *users.User
-	var restErr *errors.RestErr
+	var restErr rest_errors.RestErr
 	if userInfo, restErr = services.UsersService.Login(login.Email, login.Password); restErr != nil {
-		c.JSON(restErr.Status, restErr)
+		c.JSON(restErr.Status(), restErr)
 		return
 	}
 	fmt.Println(userInfo)
@@ -126,10 +126,10 @@ func Login(c *gin.Context) {
 	return
 }
 
-func getUserId(userIdParam string) (int64, *errors.RestErr) {
+func getUserId(userIdParam string) (int64, rest_errors.RestErr) {
 	userId, userErr := strconv.ParseInt(userIdParam, 10, 64)
 	if userErr != nil {
-		return 0, errors.NewBadRequestError("invalid user id")
+		return 0, rest_errors.NewBadRequestError("invalid user id")
 	}
 	return userId, nil
 }

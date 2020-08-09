@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/federicoleon/bookstore_utils-go/rest_errors"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -18,7 +19,7 @@ const (
 )
 
 var (
-	Client *sql.DB
+	UserDb userDbClientInterface = &userDbClient{}
 
 	username = os.Getenv(mysqlUserdbUsername)
 	password = os.Getenv(mysqlUserdbPassword)
@@ -26,15 +27,36 @@ var (
 	schema   = os.Getenv(mysqlUserdbSchema)
 )
 
+type userDbClientInterface interface {
+	setMySQLsClient(*sql.DB)
+	Prepare(string) (*sql.Stmt, rest_errors.RestErr)
+}
+
+type userDbClient struct {
+	client *sql.DB
+}
+
 func init() {
 	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", username, password, host, schema)
-	var err error
-	Client, err = sql.Open("mysql", dataSourceName)
+	client, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
-		// panic(err)
+		panic(err)
 	}
-	if err = Client.Ping(); err != nil {
-		// panic(err)
+	if err = client.Ping(); err != nil {
+		panic(err)
 	}
+	UserDb.setMySQLsClient(client)
 	log.Print("database configured!")
+}
+
+func (c *userDbClient) setMySQLsClient(client *sql.DB) {
+	c.client = client
+}
+
+func (c *userDbClient) Prepare(query string) (*sql.Stmt, rest_errors.RestErr) {
+	stmt, err := c.client.Prepare(query)
+	if err != nil {
+		return nil, rest_errors.NewInternalServerError(err.Error(), nil)
+	}
+	return stmt, nil
 }
